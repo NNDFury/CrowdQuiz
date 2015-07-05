@@ -1,0 +1,165 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset='UTF-8' />
+	<style>
+		input, textarea {border:1px solid #CCC;margin:0px;padding:0px}
+
+		#body {max-width:800px;margin:auto}
+		#log {width:100%;height:400px}
+		#message {width:100%;line-height:20px}
+	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="fancywebsocket.js"></script>
+	<script>
+		var Server;
+		var qid = 0;
+
+		function log( text ) {
+			$log = $('#log');
+			//Add text to log
+			$log.append(($log.val()?"\n":'')+text);
+			//Autoscroll
+			$log[0].scrollTop = $log[0].scrollHeight - $log[0].clientHeight;
+		}
+
+		function nextQuestion() {//{"id":"request_next_question","qid":"0"}
+			var arr = '{"id":"request_next_question","qid":"' + qid + '"}';
+			Server.send( arr );
+		}
+
+		function showResult() {
+			var arr = '{"id":"request_show_result","qid":"' + qid + '"}';
+			Server.send( arr );
+		}
+
+		function restartGame() {
+			var arr = '{"id":"request_restart_game"}';
+			Server.send( arr );
+		}
+
+		function showRanking() {
+			var arr = '{"id":"request_show_ranking","qid":"' + qid + '"}';
+			Server.send( arr );
+		}
+
+
+
+		function send( text ) {
+			// var arr = '{"id":"message","text":"' + text + '"}';
+			// Server.send( arr );
+			var intCommand = parseInt(text);
+			if(isNaN(intCommand)) {
+				Server.send( text );
+			} else {
+				switch(intCommand) {
+					case 0:
+					nextQuestion();
+					break;
+
+					case 1:
+					showResult();
+					break;
+
+					case 2:
+					restartGame();
+					break;
+
+					case 3:
+					showRanking();
+					break;
+				}
+			}
+		}
+
+		$(document).ready(function() {
+			log('Connecting...');
+			Server = new FancyWebSocket('ws://192.168.0.237:9301');
+
+			$('#message').keypress(function(e) {
+				if ( e.keyCode == 13 && this.value ) {
+					log( 'You: ' + this.value );
+					send( this.value );
+
+					$(this).val('');
+				}
+			});
+
+			//Let the user know we're connected
+			Server.bind('open', function() {
+				log( "Connected." );
+				var arr = '{"id":"notify_role","is_admin":"1"}';
+				Server.send( arr );
+			});
+
+			//OH NOES! Disconnection occurred.
+			Server.bind('close', function( data ) {
+				log( "Disconnected." );
+			});
+
+			//Log any messages sent from server
+			Server.bind('message', function( payload ) {
+				log( payload );
+				var jsonObj; 
+				try {
+     			   jsonObj = JSON.parse(payload);
+    			} catch (e) {
+    			}
+				console.log("payload=" + payload);
+				if (!jsonObj) {
+					return;
+				};
+				if(jsonObj["id"] == "notify_role"){
+
+				}else if(jsonObj["id"] == "request_next_question"){
+					qid = parseInt(jsonObj["qid"]);
+					var questionObj = jsonObj["question"];
+					var aid = parseInt(questionObj["aid"]);
+					var title = questionObj["title"];
+					var choices = questionObj["choices"];
+					console.log("qid=" + qid);
+				}else if(jsonObj["id"] == "request_show_result"){
+					qid = parseInt(jsonObj["qid"]);
+					var numOfCorrect = parseInt(jsonObj["correct"]);
+					var numOfWrong = parseInt(jsonObj["wrong"]);
+					var roundResultObj = jsonObj["roundResult"];
+					var resultType = parseInt(roundResultObj["type"]);
+					var winnerID = parseInt(roundResultObj["winnerID"]);
+
+					switch(resultType) {
+						case 0:
+						//RESULT_GO_TO_NEXT_QUESTION
+						break;
+
+						case 1:
+						//RESULT_ONLY_1_WINNER
+						break;
+
+						case 2:
+						//RESULT_SHOW_RANKING
+						break;
+
+						case 3:
+						//RESULT_NOBODY_WIN
+						break;
+					}
+					
+				} else if(jsonObj["id"] == "request_show_ranking"){
+					
+
+				}
+			});
+
+			Server.connect();
+		});
+	</script>
+</head>
+
+<body>
+	<div id='body'>
+		<textarea id='log' name='log' readonly='readonly'></textarea><br/>
+		<input type='text' id='message' name='message' />
+	</div>
+</body>
+
+</html>

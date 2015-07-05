@@ -1,0 +1,27 @@
+/* Empty. Add your own CSS if you like */
+
+.centerTitle { text-align: center;}
+
+.imageContainer{
+        position: absolute;
+        width: 400px; /*the image width*/
+        height: 400px; /*the image height*/
+        left: 50%;
+        top: 100%;
+        margin-left: -200px; /*half the image width*/
+        margin-top: -15px; /*half the image height*/
+    }
+
+ .spanTitle{
+ 	color:red;
+ 	font-weight: bold;
+ 	font-size: 20px; 
+ 	margin-right: 90px;
+ }
+
+ .spanTitleBelow{
+ 	color:black;
+ 	font-weight: bold;
+ 	font-size: 20px; 
+ 	margin-right: 120px;
+ }

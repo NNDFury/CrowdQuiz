@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title></title>
+
+    <link href="lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+
+    <!-- ionic/angularjs js -->
+    <script src="lib/ionic/js/ionic.bundle.js"></script>
+
+    <!-- cordova script (this will be a 404 during development) -->
+    <script src="cordova.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+    <!-- your app's js -->
+    <script src="js/app.js"></script>
+    <script src="js/controllers.js"></script>
+    <script src="js/fancywebsocket.js"></script>
+    <script src="js/websocket.js"></script>
+  
+    <script>
+
+      
+
+      function updatePlayerQuantity(number){
+           angular.element(document.getElementById('AngelHackController')).scope().updatePlayerQuantity(number);
+      }
+
+    </script>
+  </head>
+  <body id="AngelHackController" ng-app="app" ng-controller="AngelHack">
+    <!--
+      The nav bar that will be updated as we navigate between views.
+    -->
+    <ion-nav-bar class="bar-stable">
+     
+    </ion-nav-bar>
+  
+    <ion-nav-view></ion-nav-view>
+
+     <script id="page1.html" type="text/ng-template">
+       <ion-view title="ADMIN PAGE">
+
+          <ion-content padding="true" class="has-header">
+            <h2 class="centerTitle"> CURRENT PLAYERS: </h2>
+            <h3 class="centerTitle"> {{ quantityPlayer }} </h3>
+            <button class="button button-stable button-block " ng-click="goToNextQuestion()">Start Game</button>
+        
+            <img src="/img/qrcode.jpg" class="imageContainer">
+            <h1 class="centerTitle" style="color:blue;"> http://bit.ly/crowdquiz </h1>
+          </ion-content>
+
+      </ion-view>
+
+
+    </script>
+
+    <script id="questionPage.html" type="text/ng-template">
+       <ion-view title="QUESTION PAGE">
+
+          <ion-content padding="true" class="has-header">
+            <h2 class="centerTitle"> {{ questionContent }} </h2>
+            <ion-list>
+              <ion-item ng-repeat="item in answerList">
+                {{ index + 1}} - {{item}}
+              </ion-item>
+            </ion-list>
+
+
+            <h2 class="centerTitle" style="color:red;">Time left: {{ clockTime }} </h2>
+            <button class="button button-stable button-block " ng-click="getResult()">Show Result</button>
+          
+          </ion-content>
+
+      </ion-view>
+
+
+    </script>
+
+      <script id="resultPage.html" type="text/ng-template">
+       <ion-view title="RESULT PAGE">
+
+          <ion-content padding="true" class="has-header">
+            <h2 class="centerTitle"> Total </h2>
+            <h3 class="centerTitle"> {{ currentPlayers }} </h2>
+            <h2 class="centerTitle"> Correct </h2>
+            <h3 class="centerTitle"> {{ correctNumber }} </h2>
+            <h2 class="centerTitle"> Wrong </h2>
+            <h3 class="centerTitle"> {{ wrongNumber }} </h2>
+                                    
+
+            <button class="button button-stable button-block " ng-click="handleNextButton()">{{resultButtonName}}</button>
+          
+          </ion-content>
+
+      </ion-view>
+
+
+    </script>
+
+    <script id="finalPage.html" type="text/ng-template">
+       <ion-view title="FINAL PAGE">
+
+          <ion-content padding="true" class="has-header">
+            <h2 class="centerTitle"> Ranking </h2>
+            <div > <span class="spanTitle">RANK</span>   <span class="spanTitle">ID</span>  <span class="spanTitle">TIME</span>  </div>
+            
+             <ion-list>
+              <ion-item ng-repeat="item in listModelRank">
+              
+              <span class="spanTitleBelow">{{item.rank}}</span>
+              <span class="spanTitleBelow">#Guest{{item.id}} </span>
+              <span class="spanTitleBelow">{{item.score}}</span>
+              
+               
+              </ion-item>
+            </ion-list>
+                                    
+
+            <button class="button button-stable button-block " ng-click="restartGame()">Replay</button>
+          
+          </ion-content>
+
+      </ion-view>
+
+
+    </script>
+
+  </body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset='UTF-8' />
+	<style>
+		input, textarea {border:1px solid #CCC;margin:0px;padding:0px}
+
+		#body {max-width:800px;margin:auto}
+		#log {width:100%;height:400px}
+		#message {width:100%;line-height:20px}
+	</style>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="fancywebsocket.js"></script>
+	<script>
+		var Server;
+		var qid = 0;
+
+		function log( text ) {
+			$log = $('#log');
+			//Add text to log
+			$log.append(($log.val()?"\n":'')+text);
+			//Autoscroll
+			$log[0].scrollTop = $log[0].scrollHeight - $log[0].clientHeight;
+		}
+
+		function submitChoice(aid) {
+			var time = 4;
+			var arr = '{"id":"request_submit_choice","qid":"' + qid + '","aid":"' + aid + '","time":"' + time + '"}';
+			log(arr);
+			Server.send( arr );
+		}
+
+		function send( text ) {
+			// var arr = '{"id":"message","text":"' + text + '"}';
+			// Server.send( arr );
+			var intCommand = parseInt(text);
+			if(isNaN(intCommand)) {
+				Server.send( text );
+			} else {
+				switch(intCommand) {
+					case 0:
+					submitChoice(0);
+					break;
+
+					case 1:
+					submitChoice(1);
+					break;
+				}
+			}
+			
+			// 
+		}
+
+		$(document).ready(function() {
+			log('Connecting...');
+			Server = new FancyWebSocket('ws://192.168.0.237:9301');
+
+			$('#message').keypress(function(e) {
+				if ( e.keyCode == 13 && this.value ) {
+					log( 'You: ' + this.value );
+					send( this.value );
+
+					$(this).val('');
+				}
+			});
+
+			//Let the user know we're connected
+			Server.bind('open', function() {
+				log( "Connected." );
+				var arr = '{"id":"notify_role","is_admin":"0"}';
+				Server.send( arr );
+			});
+
+			//OH NOES! Disconnection occurred.
+			Server.bind('close', function( data ) {
+				log( "Disconnected." );
+			});
+
+			//Log any messages sent from server
+			Server.bind('message', function( payload ) {
+				log( payload );
+				var jsonObj; 
+				try {
+     			   jsonObj = JSON.parse(payload);
+    			} catch (e) {
+    			}
+				console.log("payload=" + payload);
+				if (!jsonObj) {
+					return;
+				};
+				if(jsonObj["id"] == "notify_role"){
+
+				}else if(jsonObj["id"] == "request_next_question"){
+					qid = parseInt(jsonObj["qid"]);
+					var questionObj = jsonObj["question"];
+					var aid = parseInt(questionObj["aid"]);
+					var title = questionObj["title"];
+					var choices = questionObj["choices"];
+					console.log("qid=" + qid);
+				}else if(jsonObj["id"] == "request_show_result"){
+					qid = parseInt(jsonObj["qid"]);
+					var isCorrect = jsonObj["result"] == "true";
+
+				} else if(jsonObj["id"] == "request_show_ranking"){
+					//you are the winner
+					log( "You are the winner." );
+				}
+			});
+
+			Server.connect();
+		});
+	</script>
+</head>
+
+<body>
+	<div id='body'>
+		<textarea id='log' name='log' readonly='readonly'></textarea><br/>
+		<input type='text' id='message' name='message' />
+	</div>
+</body>
+
+</html>
